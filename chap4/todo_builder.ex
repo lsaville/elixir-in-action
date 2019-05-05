@@ -61,6 +61,28 @@ defmodule TodoList do
   end
 end
 
+defimpl Collectable, for: TodoList do
+  def into(original) do
+    {original, &into_callback/2}
+  end
+
+  defp into_callback(todo_list, {:cont, entry}) do
+    TodoList.add_entry(todo_list, entry)
+  end
+  defp into_callback(todo_list, :done), do: todo_list
+  defp into_callback(todo_list, :halt), do: :ok
+end
+
+defimpl String.Chars, for: TodoList do
+  def to_string(nil) do
+    ""
+  end
+
+  def to_string(todo_list) do
+    "WOW Y WOW"
+  end
+end
+
 # My version
 defmodule TodoList.CsvImporter do
   def import(file_path) do
@@ -134,6 +156,12 @@ end
 #end
 
 #Iex fodder
+
+entries = [
+  %{date: ~D[2018-12-19], title: "Dentist"},
+  %{date: ~D[2018-12-20], title: "Shopping"},
+  %{date: ~D[2018-12-19], title: "Movies"}
+]
 
 todo_list =
   TodoList.new() |>
