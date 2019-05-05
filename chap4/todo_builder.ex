@@ -67,11 +67,20 @@ defmodule TodoList.CsvImporter do
     File.stream!(file_path)
     |> Stream.map(&(String.replace(&1, "\n", "")))
     |> Stream.map(&(String.split(&1, ",")))
-    |> Stream.map(fn [date, title] ->
-      %{date: date, title: title}
-    end)
+    |> Stream.map(&(prep_entry(&1)))
     |> Enum.to_list
     |> TodoList.new()
+  end
+
+  defp prep_entry([date, title]) do
+    # this seems a bit more straightforward to me
+    #date = String.replace(date, "/", "-")
+    #%{date: Date.from_iso8601(date), title: title}
+
+    [year, month, day] = String.split(date, "/")
+    |> Enum.map(&(String.to_integer(&1)))
+
+    %{date: Date.from_erl({year, month, day}), title: title}
   end
 end
 
