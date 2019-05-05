@@ -3,6 +3,8 @@ defmodule TodoList do
   defstruct auto_id: 1, entries: %{}
 
   def new(entries \\ []) do
+    # fn -> style
+    #
     #Enum.reduce(
     #  entries,
     #  %TodoList{},
@@ -58,6 +60,22 @@ defmodule TodoList do
     |> Enum.map(fn {_, entry} -> entry end)
   end
 end
+
+
+defmodule TodoList.CsvImporter do
+  def import(file_path) do
+    File.stream!(file_path)
+    |> Stream.map(&(String.replace(&1, "\n", "")))
+    |> Stream.map(&(String.split(&1, ",")))
+    |> Stream.map(fn [date, title] ->
+      %{date: date, title: title}
+    end)
+    |> Enum.to_list
+    |> TodoList.new()
+  end
+end
+
+#Iex fodder
 
 todo_list =
   TodoList.new() |>
