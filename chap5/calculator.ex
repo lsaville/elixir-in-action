@@ -45,6 +45,7 @@
 #    end
 #  end
 #end
+# Note: Perhaps this Calculator could be a nice jump off for macro exploration
 
 defmodule Calculator do
   def start do
