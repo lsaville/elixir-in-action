@@ -23,16 +23,21 @@ defmodule TodoServer do
   defp loop(current_list) do
     new_list =
       receive do
-        {:entries, date, caller} ->
-          send(caller, {:response, TodoList.entries(current_list, date)})
-          current_list
-        {:add_entry, entry} ->
-          TodoList.add_entry(current_list, entry)
-        invalid ->
-          IO.puts("#{invalid} not supported")
+        message -> process_message(current_list, message)
       end
 
     loop(new_list)
+  end
+
+  defp process_message(todo_list, {:entries, date, caller}) do
+    send(caller, {:response, TodoList.entries(todo_list, date)})
+    todo_list
+  end
+  defp process_message(todo_list, {:add_entry, entry}) do
+    TodoList.add_entry(todo_list, entry)
+  end
+  defp process_message(todo_list, invalid) do
+    IO.puts("#{invalid} not supported")
   end
 end
 
