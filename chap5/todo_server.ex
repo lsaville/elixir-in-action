@@ -9,8 +9,8 @@ defmodule TodoServer do
     send(server_pid, {:entries, date, self()})
 
     receive do
-      {:response, entries} ->
-        IO.inspect(entries)
+      {:todo_entries, entries} ->
+        entries
     after
       5000 -> {:error, :timeout}
     end
@@ -18,6 +18,17 @@ defmodule TodoServer do
 
   def add_entry(server_pid, entry) do
     send(server_pid, {:add_entry, entry})
+  end
+
+  def update_entry(server_pid, %{} = entry) do
+    send(server_pid, {:update_entry, entry})
+  end
+  def update_entry(server_pid, entry_id, updater_fun) do
+    send(server_pid, {:update_entry, entry_id, updater_fun})
+  end
+
+  def delete_entry(server_pid, entry_id) do
+    send(server_pid, {:delete_entry, entry_id})
   end
 
   defp loop(current_list) do
@@ -30,13 +41,22 @@ defmodule TodoServer do
   end
 
   defp process_message(todo_list, {:entries, date, caller}) do
-    send(caller, {:response, TodoList.entries(todo_list, date)})
+    send(caller, {:todo_entries, TodoList.entries(todo_list, date)})
     todo_list
   end
   defp process_message(todo_list, {:add_entry, entry}) do
     TodoList.add_entry(todo_list, entry)
   end
-  defp process_message(todo_list, invalid) do
+  defp process_message(todo_list, {:update_entry, %{} = entry}) do
+    TodoList.update_entry(todo_list, entry)
+  end
+  defp process_message(todo_list, {:update_entry, entry_id, updater_fun}) do
+    TodoList.update_entry(todo_list, entry_id, updater_fun)
+  end
+  defp process_message(todo_list, {:delete_entry, entry_id}) do
+    TodoList.delete_entry(todo_list, entry_id)
+  end
+  defp process_message(_todo_list, invalid) do
     IO.puts("#{invalid} not supported")
   end
 end
