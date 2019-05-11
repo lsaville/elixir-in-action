@@ -1,7 +1,9 @@
 defmodule TodoServer do
   def start do
-    spawn(fn -> loop(TodoList.new()) end)
-    |> Process.register(:todo_server)
+    spawn(fn ->
+      Process.register(self(), :todo_server)
+      loop(TodoList.new())
+    end)
   end
 
   def entries(date) do
