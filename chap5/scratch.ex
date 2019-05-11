@@ -87,3 +87,16 @@ TodoServer.delete_entry(1)
 TodoServer.update_entry(%{id: 2, date: ~D[2018-12-19], title: "WOW shopping"})
 TodoServer.update_entry(3, &Map.put(&1, :title, "WOW movies"))
 TodoServer.entries(~D[2018-12-19])
+
+# process_bottleneck
+server = Server.start()
+Enum.each(
+  1..5,
+  fn i ->
+    spawn(fn ->
+      IO.puts("Sending msg ##{i}")
+      response = Server.send_msg(server, i)
+      IO.puts("Response: ##{response}")
+    end)
+  end
+)
