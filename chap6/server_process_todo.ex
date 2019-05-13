@@ -1,3 +1,49 @@
+defmodule TodoServer do
+  def init do
+    TodoList.new()
+  end
+
+  def start do
+    ServerProcess.start(TodoServer)
+  end
+
+  def entries(pid, date) do
+    ServerProcess.call(pid, {:entries, date})
+  end
+
+  def add_entry(pid, entry) do
+    ServerProcess.cast(pid, {:add_entry, entry})
+  end
+
+  def update_entry(pid, %{} = entry) do
+    ServerProcess.cast(pid, {:update_entry, entry})
+  end
+  def update_entry(pid, entry_id, updater_fun) do
+    ServerProcess.cast(pid, {:update_entry, entry_id, updater_fun})
+  end
+
+  def delete_entry(pid, entry_id) do
+    ServerProcess.cast(pid, {:delete_entry, entry_id})
+  end
+
+  def handle_call({:entries, date}, todo_list) do
+    {TodoList.entries(todo_list, date), todo_list}
+  end
+
+  def handle_cast({:add_entry, entry}, todo_list) do
+    TodoList.add_entry(todo_list, entry)
+  end
+  def handle_cast({:update_entry, %{} = entry}, todo_list) do
+    TodoList.update_entry(todo_list, entry)
+  end
+  def handle_cast({:update_entry, entry_id, updater_fun}, todo_list) do
+    TodoList.update_entry(todo_list, entry_id, updater_fun)
+  end
+  def handle_cast({:delete_entry, entry_id}, todo_list) do
+    TodoList.delete_entry(todo_list, entry_id)
+  end
+end
+
 defmodule ServerProcess do
   def start(callback_module) do
     spawn(fn ->
@@ -42,84 +88,6 @@ defmodule ServerProcess do
         loop(callback_module, new_state)
     end
   end
-end
-
-defmodule TodoServer do
-  def init do
-    Todolist.new()
-  end
-
-  def start do
-    ServerProcess.start(TodoServer)
-  end
-
-  # examples from server_process_cast
-  #def put(pid, key, value) do
-  #  ServerProcess.cast(pid, {:put, key, value})
-  #end
-  #
-  #def get(pid, key) do
-  #  ServerProcess.call(pid, {:get, key})
-  #end
-
-  #MAIN INTERFACE
-  #call
-  def entries(date) do
-    send(:todo_server, {:entries, date, self()})
-
-    receive do
-      {:todo_entries, entries} ->
-        entries
-    after
-      5000 -> {:error, :timeout}
-    end
-  end
-
-  def entries(pid, date) do
-    ServerProcess.call(pid, {:entries, date})
-  end
-
-  #cast
-  def add_entry(pid, entry) do
-    ServerProcess.cast(pid, {:add_entry, entry})
-  end
-
-  #cast
-  def update_entry(pid, %{} = entry) do
-    ServerProcess.cast(pid, {:update_entry, entry})
-  end
-  #cast
-  def update_entry(pid, entry_id, updater_fun) do
-    ServerProcess.cast(pid, {:update_entry, entry, updater_fun})
-  end
-
-  #cast
-  def delete_entry(pid, entry_id) do
-    ServerProcess.cast(pid, {:delete_entry, entry_id})
-  end
-  #END MAIN INTERFACE
-
-  #HANDLES
-  defp handle_call(todo_list, {:entries, date, caller}) do
-    send(caller, {:todo_entries, TodoList.entries(todo_list, date)})
-    todo_list
-  end
-  defp handle_cast(todo_list, {:add_entry, entry}) do
-    TodoList.add_entry(todo_list, entry)
-  end
-  defp handle_cast(todo_list, {:update_entry, %{} = entry}) do
-    TodoList.update_entry(todo_list, entry)
-  end
-  defp handle_cast(todo_list, {:update_entry, entry_id, updater_fun}) do
-    TodoList.update_entry(todo_list, entry_id, updater_fun)
-  end
-  defp handle_cast(todo_list, {:delete_entry, entry_id}) do
-    TodoList.delete_entry(todo_list, entry_id)
-  end
-  defp handle_cast(_todo_list, invalid) do
-    IO.puts("#{invalid} not supported")
-  end
-  #END HANDLES
 end
 
 defmodule TodoList do
