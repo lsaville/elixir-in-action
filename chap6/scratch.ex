@@ -14,3 +14,29 @@ TodoServer.delete_entry(pid, 1)
 TodoServer.update_entry(pid, %{id: 2, date: ~D[2018-12-19], title: "WOW shopping"})
 TodoServer.update_entry(pid, 3, &Map.put(&1, :title, "WOW movies"))
 TodoServer.entries(pid, ~D[2018-12-19])
+
+defmodule KeyValueStore do
+  use GenServer
+
+  def init(_) do
+    :timer.send_interval(5000, :cleanup)
+    {:ok, %{}}
+  end
+
+  def handle_info(:cleanup, state) do
+    IO.puts "performing cleanup...."
+    {:noreply, state}
+  end
+end
+{:ok, pid} = GenServer.start(KeyValueStore, nil)
+
+defmodule EchoServer do
+  use GenServer
+
+  @impl GenServer
+  def handle_call(some_request, server_state) do
+    {:reply, some_request, server_state}
+  end
+end
+{:ok, pid} = GenServer.start(EchoServer, nil)
+GenServer.call(pid, :some_call)
