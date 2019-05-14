@@ -9,7 +9,7 @@ defmodule KeyValueStore do
     {:noreply, Map.put(state, key, value)}
   end
 
-  def handle_call({:get, key}, state) do
-    {:reply, Map.get(state, key)}
+  def handle_call({:get, key}, _, state) do
+    {:reply, Map.get(state, key), state}
   end
 end
