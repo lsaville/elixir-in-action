@@ -14,6 +14,17 @@ defmodule TodoServer do
     GenServer.cast(pid, {:add_entry, entry})
   end
 
+  def update_entry(pid, entry) do
+    GenServer.cast(pid, {:update_entry, entry})
+  end
+  def update_entry(pid, entry_id, updater_fun) do
+    GenServer.cast(pid, {:update_entry, entry_id, updater_fun})
+  end
+
+  def delete_entry(pid, entry_id) do
+    GenServer.cast(pid, {:delete_entry, entry_id})
+  end
+
   def entries(pid) do
     GenServer.call(pid, {:entries})
   end
@@ -24,6 +35,21 @@ defmodule TodoServer do
   @impl true
   def handle_cast({:add_entry, entry}, todo_list) do
     {:noreply, TodoList.add_entry(todo_list, entry)}
+  end
+
+  @impl true
+  def handle_cast({:update_entry, entry}, todo_list) do
+    {:noreply, TodoList.update_entry(todo_list, entry)}
+  end
+
+  @impl true
+  def handle_cast({:update_entry, entry_id, updater_fun}, todo_list) do
+    {:noreply, TodoList.update_entry(todo_list, entry_id, updater_fun)}
+  end
+
+  @impl true
+  def handle_cast({:delete_entry, entry_id}, todo_list) do
+    {:noreply, TodoList.delete_entry(todo_list, entry_id)}
   end
 
   @impl true
