@@ -1,0 +1,11 @@
+# chap 7 mix proj
+{:ok, pid} = Todo.Server.start()
+Todo.Server.add_entry(pid, %{date: ~D[2018-12-19], title: "Dentist"})
+Todo.Server.add_entry(pid, %{date: ~D[2018-12-20], title: "Shopping"})
+Todo.Server.add_entry(pid, %{date: ~D[2018-12-19], title: "Movies"})
+Todo.Server.entries(pid, ~D[2018-12-19])
+Todo.Server.entries(pid)
+Todo.Server.delete_entry(pid, 1)
+Todo.Server.update_entry(pid, %{id: 2, date: ~D[2018-12-19], title: "WOW shopping"})
+Todo.Server.update_entry(pid, 3, &Map.put(&1, :title, "WOW movies"))
+Todo.Server.entries(pid, ~D[2018-12-19])
