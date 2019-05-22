@@ -1,43 +1,34 @@
-defmodule Todo.Database do
+#Can't be registered by name
+defmodule Todo.DatabaseWorker do
   use GenServer
 
   @db_folder "./persist"
 
-  #INTERFACE
-  def start do
-    GenServer.start(__MODULE__, nil,
-      name: __MODULE__
-    )
+  def start(db_folder) do
+    GenServer.start(__MODULE__, db_folder)
   end
 
-  def store(key, data) do
-    #choose_worker
-    GenServer.cast(__MODULE__, {:store, key, data})
-  end
-
-  def get(key) do
-    #choose_worker
-    GenServer.call(__MODULE__, {:get, key})
-  end
-
-
-  def choose_worker(key) do
-    #same worker for same key
-  end
-
-
-  #REST
   @impl GenServer
   def init(_) do
-    #start workers and store them in a map
-    #0 based index keys
+    {:ok, nil}
+  end
+  @impl GenServer
+  def init(_) do
     File.mkdir_p!(@db_folder)
     {:ok, nil}
   end
 
+
+  def store(key, data) do
+    GenServer.cast(__MODULE__, {:store, key, data})
+  end
+
+  def get(key) do
+    GenServer.call(__MODULE__, {:get, key})
+  end
+
   @impl GenServer
   def handle_cast({:store, key, data}, state) do
-    #send to worker
     spawn(fn ->
       key
       |> file_name()
@@ -49,7 +40,6 @@ defmodule Todo.Database do
 
   @impl GenServer
   def handle_call({:get, key}, caller, state) do
-    #send to worker
     spawn(fn ->
       data = case File.read(file_name(key)) do
         {:ok, contents} -> :erlang.binary_to_term(contents)
