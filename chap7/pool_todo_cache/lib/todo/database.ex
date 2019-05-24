@@ -11,13 +11,15 @@ defmodule Todo.Database do
   end
 
   def store(key, data) do
-    choose_worker(key)
+    key
+    |> choose_worker()
     |> Todo.DatabaseWorker.store({:store, key, data})
     IO.puts("and im out from store")
   end
 
   def get(key) do
-    choose_worker(key)
+    key
+    |> choose_worker()
     |> Todo.DatabaseWorker.get({:get, key, self()})
     IO.puts("and im out from get")
   end
