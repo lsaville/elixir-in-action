@@ -35,4 +35,6 @@ Enum.each(
 
 {:ok, cache} = Todo.Cache.start()
 bobs_list = Todo.Cache.server_process(cache, "bobs_list")
+craigs_list = Todo.Cache.server_process(cache, "craigs_list")
 Todo.Server.add_entry(bobs_list, %{date: ~D[2018-12-19], title: "Dentist"})
+Todo.Server.add_entry(craigs_list, %{date: ~D[2018-12-19], title: "Sell things"})
