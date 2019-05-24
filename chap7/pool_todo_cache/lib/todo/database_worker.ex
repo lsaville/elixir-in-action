@@ -2,16 +2,14 @@
 defmodule Todo.DatabaseWorker do
   use GenServer
 
-  @db_folder "./persist"
-
   def start(db_folder) do
     GenServer.start(__MODULE__, db_folder)
   end
 
   @impl GenServer
-  def init(_) do
-    File.mkdir_p!(@db_folder)
-    {:ok, nil}
+  def init(db_folder) do
+    File.mkdir_p!(db_folder)
+    {:ok, db_folder}
   end
 
 
@@ -26,7 +24,7 @@ defmodule Todo.DatabaseWorker do
   @impl GenServer
   def handle_cast({:store, key, data}, state) do
     key
-    |> file_name()
+    |> file_name(state)
     |> File.write!(:erlang.term_to_binary(data))
 
     {:noreply, data, state}
@@ -34,7 +32,7 @@ defmodule Todo.DatabaseWorker do
 
   @impl GenServer
   def handle_call({:get, key}, _from, state) do
-    data = case File.read(file_name(key)) do
+    data = case File.read(file_name(key, state)) do
       {:ok, contents} -> :erlang.binary_to_term(contents)
       _ -> nil
     end
@@ -42,8 +40,8 @@ defmodule Todo.DatabaseWorker do
     {:reply, data, state}
   end
 
-  defp file_name(key) do
-    Path.join(@db_folder, to_string(key))
+  defp file_name(key, db_folder) do
+    Path.join(db_folder, to_string(key))
   end
 
 end
