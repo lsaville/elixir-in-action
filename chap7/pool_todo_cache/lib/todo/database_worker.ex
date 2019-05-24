@@ -12,22 +12,13 @@ defmodule Todo.DatabaseWorker do
     {:ok, db_folder}
   end
 
-
-  def store(key, data) do
-    GenServer.cast(__MODULE__, {:store, key, data})
-  end
-
-  def get(key) do
-    GenServer.call(__MODULE__, {:get, key})
-  end
-
   @impl GenServer
   def handle_cast({:store, key, data}, state) do
     key
     |> file_name(state)
     |> File.write!(:erlang.term_to_binary(data))
 
-    {:noreply, data, state}
+    {:noreply, state}
   end
 
   @impl GenServer
