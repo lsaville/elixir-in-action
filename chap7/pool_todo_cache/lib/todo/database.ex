@@ -21,18 +21,25 @@ defmodule Todo.Database do
   end
 
 
-  def choose_worker(key) do
+  def choose_worker(_key) do
     #same worker for same key
   end
 
+  def create_workers do
+    0..2
+    |> Enum.reduce(%{}, fn i, acc ->
+      {:ok, pid} = Todo.DatabaseWorker.start(@db_folder)
+      Map.put(acc, i, pid)
+    end)
+  end
 
   #REST
   @impl GenServer
   def init(_) do
+    workers = create_workers()
     #start workers and store them in a map
     #0 based index keys
-    File.mkdir_p!(@db_folder)
-    {:ok, nil}
+    {:ok, workers}
   end
 
   @impl GenServer
