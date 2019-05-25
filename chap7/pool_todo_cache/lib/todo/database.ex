@@ -3,7 +3,6 @@ defmodule Todo.Database do
 
   @db_folder "./persist"
 
-  #INTERFACE
   def start do
     GenServer.start(__MODULE__, nil,
       name: __MODULE__
@@ -13,67 +12,52 @@ defmodule Todo.Database do
   def store(key, data) do
     key
     |> choose_worker()
-    |> Todo.DatabaseWorker.store({:store, key, data})
+    |> Todo.DatabaseWorker.store(key, data)
+
+    IO.inspect(self())
     IO.puts("and im out from store")
   end
 
   def get(key) do
     key
     |> choose_worker()
-    |> Todo.DatabaseWorker.get({:get, key, self()})
+    |> Todo.DatabaseWorker.get(key)
+
+    IO.inspect(self())
     IO.puts("and im out from get")
   end
 
-
-  def choose_worker(key) do
-    GenServer.call(__MODULE__, {:worker, key})
+  defp choose_worker(key) do
+    GenServer.call(__MODULE__, {:choose_worker, key})
   end
 
-  def create_workers do
-    0..2
-    |> Enum.reduce(%{}, fn i, acc ->
-      {:ok, pid} = Todo.DatabaseWorker.start(@db_folder)
-      Map.put(acc, i, pid)
-    end)
-  end
-
-  #REST
   @impl GenServer
   def init(_) do
-    workers = create_workers()
-    {:ok, workers}
+    File.mkdir_p!(@db_folder)
+    {:ok, start_workers()}
   end
-
-  #@impl GenServer
-  #def handle_cast({:store, key, data}, state) do
-  #  #send to worker
-  #  key
-  #  |> file_name()
-  #  |> File.write!(:erlang.term_to_binary(data))
-
-  #  {:noreply, state}
-  #end
-
-  #@impl GenServer
-  #def handle_call({:get, key}, _from, state) do
-  #  #send to worker
-  #  data = case File.read(file_name(key)) do
-  #    {:ok, contents} -> :erlang.binary_to_term(contents)
-  #    _ -> nil
-  #  end
-
-  #  {:reply, data, state}
-  #end
 
   @impl GenServer
-  def handle_call({:worker, key}, _from, state) do
-    access_key = :erlang.phash2(key, 3)
+  def handle_call({:choose_worker, key}, _from, workers) do
+    worker_key = :erlang.phash2(key, 3)
 
-    {:reply, Map.get(state, access_key), state}
+    {:reply, Map.get(workers, worker_key), workers}
   end
 
-  #defp file_name(key) do
-  #  Path.join(@db_folder, to_string(key))
+  defp start_workers do
+    for index <- 1..3, into: %{} do
+      {:ok, pid} = Todo.DatabaseWorker.start(@db_folder)
+      {index - 1, pid}
+    end
+  end
+
+  # my little version
+  #def start_workers do
+  #  0..2
+  #  |> Enum.reduce(%{}, fn i, acc ->
+  #    {:ok, pid} = Todo.DatabaseWorker.start(@db_folder)
+  #    Map.put(acc, i, pid)
+  #  end)
   #end
 
 end
