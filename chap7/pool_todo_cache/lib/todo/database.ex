@@ -11,18 +11,12 @@ defmodule Todo.Database do
     key
     |> choose_worker()
     |> Todo.DatabaseWorker.store(key, data)
-
-    IO.inspect(self())
-    IO.puts("and im out from store")
   end
 
   def get(key) do
     key
     |> choose_worker()
     |> Todo.DatabaseWorker.get(key)
-
-    IO.inspect(self())
-    IO.puts("and im out from get")
   end
 
   defp choose_worker(key) do
@@ -38,7 +32,6 @@ defmodule Todo.Database do
   @impl GenServer
   def handle_call({:choose_worker, key}, _from, workers) do
     worker_key = :erlang.phash2(key, 3)
-
     {:reply, Map.get(workers, worker_key), workers}
   end
 
@@ -48,14 +41,4 @@ defmodule Todo.Database do
       {index - 1, pid}
     end
   end
-
-  # my little version
-  #def start_workers do
-  #  0..2
-  #  |> Enum.reduce(%{}, fn i, acc ->
-  #    {:ok, pid} = Todo.DatabaseWorker.start(@db_folder)
-  #    Map.put(acc, i, pid)
-  #  end)
-  #end
-
 end

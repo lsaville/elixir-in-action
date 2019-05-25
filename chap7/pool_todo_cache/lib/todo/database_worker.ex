@@ -1,4 +1,3 @@
-#Can't be registered by name
 defmodule Todo.DatabaseWorker do
   use GenServer
 
@@ -21,10 +20,6 @@ defmodule Todo.DatabaseWorker do
 
   @impl GenServer
   def handle_cast({:store, key, data}, db_folder) do
-    IO.puts("=========== from:")
-    IO.inspect(self())
-    IO.inspect("storing #{key}")
-
     db_folder
     |> file_name(key)
     |> File.write!(:erlang.term_to_binary(data))
@@ -34,14 +29,11 @@ defmodule Todo.DatabaseWorker do
 
   @impl GenServer
   def handle_call({:get, key}, _from, db_folder) do
-    IO.puts("=========== from:")
-    IO.inspect(self())
-    IO.inspect("getting data for #{key}")
-
-    data = case File.read(file_name(db_folder, key)) do
-      {:ok, contents} -> :erlang.binary_to_term(contents)
-      _ -> nil
-    end
+    data =
+      case File.read(file_name(db_folder, key)) do
+        {:ok, contents} -> :erlang.binary_to_term(contents)
+        _ -> nil
+      end
 
     {:reply, data, db_folder}
   end
@@ -49,5 +41,4 @@ defmodule Todo.DatabaseWorker do
   defp file_name(db_folder, key) do
     Path.join(db_folder, to_string(key))
   end
-
 end
