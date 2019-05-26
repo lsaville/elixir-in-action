@@ -24,7 +24,7 @@ defmodule Todo.DatabaseWorker do
     |> file_name(key)
     |> File.write!(:erlang.term_to_binary(data))
 
-    {:noreply, db_folder}
+    {:noreply, data, db_folder}
   end
 
   @impl GenServer
