@@ -2,6 +2,7 @@ defmodule Todo.DatabaseWorker do
   use GenServer
 
   def start(db_folder) do
+    IO.puts("starting to-do db-worker")
     GenServer.start(__MODULE__, db_folder)
   end
 
