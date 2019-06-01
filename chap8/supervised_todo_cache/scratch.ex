@@ -27,3 +27,14 @@ Todo.Cache.child_spec(nil)
 # %{id: Todo.Cache, start: {Todo.Cache, :start_link, [nil]}}
 
 Todo.System.start_link()
+bobs_list = Todo.Cache.server_process("Bob's list")
+:erlang.system_info(:process_count)
+Process.exit(Process.whereis(Todo.Cache), :kill)
+Todo.Cache.server_process("Bob's list")
+:erlang.system_info(:process_count)
+
+
+for _ <- 1..4 do
+  Process.exit(Process.whereis(Todo.Cache), :kill)
+  Process.sleep(200)
+end
