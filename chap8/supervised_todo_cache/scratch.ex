@@ -26,6 +26,7 @@ Todo.Cache.child_spec(nil)
 # This should give back
 # %{id: Todo.Cache, start: {Todo.Cache, :start_link, [nil]}}
 
+# proof that everything goes down when they're all linked
 Todo.System.start_link()
 bobs_list = Todo.Cache.server_process("Bob's list")
 :erlang.system_info(:process_count)
@@ -34,6 +35,7 @@ Todo.Cache.server_process("Bob's list")
 :erlang.system_info(:process_count)
 
 
+# demostration of restart frequency
 for _ <- 1..4 do
   Process.exit(Process.whereis(Todo.Cache), :kill)
   Process.sleep(200)
