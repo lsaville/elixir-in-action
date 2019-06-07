@@ -45,6 +45,7 @@ defmodule EchoServer do
   end
 
   def call(id, some_request) do
+    IO.inspect(via_tuple(id))
     GenServer.call(via_tuple(id), some_request)
   end
 
@@ -66,3 +67,13 @@ EchoServer.start_link("server two")
 EchoServer.call("server one", :some_request)
 EchoServer.call("server two", :another_request)
 
+# Supervising each worker
+Todo.System.start_link()
+
+[{worker_pid, _}] =
+  Registry.lookup(
+    Todo.ProcessRegistry,
+    {Todo.DatabaseWorker, 2}
+  )
+
+Process.exit(worker_pid, :kill)
