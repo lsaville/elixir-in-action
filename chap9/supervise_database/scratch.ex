@@ -4,6 +4,9 @@ Process.exit(Process.whereis(Todo.Cache), :kill)
 
 {:ok, _} = Registry.start_link(name: :my_registry, keys: :unique)
 
+# Register this one off process to the registry relying on the fact that this
+# automatically puts the pid of the registering party in the registry along with
+# a value (which we don't care about here)
 spawn(fn ->
   Registry.register(:my_registry, {:database_worker, 1}, nil)
 
@@ -12,11 +15,9 @@ spawn(fn ->
   end
 end)
 
-[{db_worker_pid, _value}] =
-  Registry.lookup(
-    :my_registry,
-    {:database_worker, 1}
-  )
+# Do the registry lookup (we're in the role of "client" here), again we dont
+# care about the value, which is nil from the registering that happened above
+[{db_worker_pid, _value}] = Registry.lookup( :my_registry, {:database_worker, 1})
 
 
 send(db_worker_pid, :some_message)
